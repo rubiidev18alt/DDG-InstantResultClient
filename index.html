@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDG Instant Result Client</title>
+    <style>
+        body {
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            color: #ccc;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #99ccff;
+        }
+
+        #searchQuery {
+            width: 300px;
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 8px 20px;
+            background-color: #99ccff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #222;
+            font-size: 16px;
+        }
+
+        #searchResults {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .result {
+            background-color: #444;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        .result h3 {
+            margin-top: 0;
+            color: #99ccff;
+        }
+
+        .result p {
+            margin-bottom: 5px;
+        }
+
+        .result a {
+            color: #99ccff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>DDG Instant Result Client</h1>
+    <input type="text" id="searchQuery" placeholder="Enter your search query">
+    <button onclick="search()">Search</button>
+
+    <div id="searchResults"></div>
+
+    <script>
+        function search() {
+            var query = document.getElementById("searchQuery").value.trim();
+            if (query === "") {
+                alert("Please enter a search query");
+                return;
+            }
+
+            var url = "https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&pretty=1";
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    displayResults(response.RelatedTopics);
+                } else {
+                    alert("Error: " + xhr.statusText);
+                }
+            };
+            xhr.send();
+        }
+
+        function displayResults(results) {
+            var searchResultsDiv = document.getElementById("searchResults");
+            searchResultsDiv.innerHTML = "";
+
+            if (results && results.length > 0) {
+                var displayedResults = results.slice(0, 10); // Display the first 10 results
+                displayedResults.forEach(function(result) {
+                    if (result.Text !== undefined) {
+                        var resultDiv = document.createElement("div");
+                        resultDiv.classList.add("result");
+                        resultDiv.innerHTML = "<h3>" + result.Text + "</h3>";
+                        resultDiv.innerHTML += "<p>" + (result.Result ? result.Result : result.Text) + "</p>";
+                        if (result.FirstURL) {
+                            resultDiv.innerHTML += "<a href='" + result.FirstURL + "' target='_blank'>" + result.FirstURL + "</a>";
+                        }
+                        searchResultsDiv.appendChild(resultDiv);
+                    }
+                });
+            } else {
+                searchResultsDiv.innerHTML = "<p>No results found</p>";
+            }
+        }
+    </script>
+</body>
+</html>
